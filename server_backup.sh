@@ -8,9 +8,39 @@ function do_backup_folder()
     $home_daily_dir=$s4;
     file_name="$home_daily_dir""$name_for_folder""_$current_date.tar.gz";
 
-    tar -cvzf $file_name $folder_to_backup;
+    tar -czfp $file_name $folder_to_backup;
     
 }
+
+function do_mysql_backup()
+{
+    db_daily_dir=$1;
+    current_date=$2;
+    mysql_user=$3;
+    mysql_password=$4;
+    
+    echo ==========================
+    echo $db_daily_dir;
+    echo $mysql_user;
+    echo $mysql_password;
+    
+    mysql_command="mysql -u $mysql_user -p'$mysql_password' -e'SHOW DATABASES;'";
+    
+    ##eval $mysql_command;
+    #echo `$mysql_command | egrep -v 'information_schema|performance_schema|Database'`
+    echo ==========================
+    for i in `eval $mysql_command | egrep -v 'information_schema|performance_schema|Database|mysql'`; 
+    do
+        mysql_target_file=$db_daily_dir"/db_"$current_date"."$i".sql"; 
+    	echo $mysql_target_file
+    	dump_command="mysqldump --default-character-set=utf8 -u "$mysql_user" -p'"$mysql_password"' "$i" > "$mysql_target_file
+        echo $dump_command;
+        eval $dump_command;
+    	gzip -9f $mysql_target_file;
+    done    
+    
+}
+
 
 
 
@@ -28,11 +58,14 @@ else
 fi
 
 
+
+
 #checking if there necassary folders
 if [ ! -d "$home_daily_dir" ]
 then
     echo WARNING:1 The targed directory missing $home_daily_dir trying to create
     mkdir "$home_daily_dir"
+    mkdir "$db_daily_dir"
     if [ ! -d "$home_daily_dir" ]
     then
         echo ERR:1 Could not create $home_daily_dir,... sorry cant continue;
@@ -43,7 +76,7 @@ fi
 echo $current_date;
 echo $1;
 case $1 in
-    -test)
+    -daily)
         counter=0;
         folders=${#backup_folders[@]}
         folder_names=${#backup_folder_names[@]}
@@ -58,18 +91,18 @@ case $1 in
         for i in "${backup_folders[@]}"
         do
            
-            ##echo ${numbers[${i}]}
+            
             the_folder_name=${backup_folder_names[${counter}]}
-            echo $the_folder_name
-            echo $counter;
-            echo $i
+            echo Folder to copy : $i
             do_backup_folder $i $the_folder_name $current_date $home_daily_dir;
             counter=$(($counter+1));
-        done;;
+        done
+        if [ $mysql_backup ]
+        then
+            do_mysql_backup $db_daily_dir $current_date $mysql_user $mysql_password;
+        fi
         
-   -daily)
-      tar -cvzf "$home_daily_dir/home_$current_date.tar.gz" /home/
-      tar -cvzf "$settings_daily_dir/etc_$current_date.tar.gz" /etc/;;
+        ;;
    -weekly)
       cp "$home_daily_dir/home_$current_date.tar.gz" "$home_weekly_dir/"
       cp "$settings_daily_dir/etc_$current_date.tar.gz" "$settings_weekly_dir/";;
@@ -78,16 +111,7 @@ case $1 in
       cp "$settings_daily_dir/etc_$current_date.tar.gz" "$settings_monthly_dir/";;
 esac
 
-#for i in `mysql -u $mysql_user -p'$mysq_password' -e'SHOW DATABASES;' | egrep -v 'information_schema|performance_schema|Database'`; 
-#do 
-#	echo $db_daily_dir."db_".$current_date.$i.sql;
-#	mysqldump --default-character-set=utf8 -u $mysql_user -p'$mysq_password' $i > /media/backup/daily/db/db_$current_date.$i.sql; 
-#	gzip -9f /media/backup/daily/db/db_$current_date.$i.sql;
-#	case $1 in
-#		-weekly) cp /media/backup/daily/db/db_$current_date.$i.sql.gz /media/backup/weekly/db/;;
-#		-monthly) cp /media/backup/daily/db/db_$current_date.$i.sql.gz /media/backup/monthly/db/;;
-#	esac
-#done
+
 
 #echo "Informing that backup is finished" | mail -s "[itdep412] Finished backup" $notify_email
 
