@@ -16,7 +16,7 @@ function do_backup_folder()
     
     #taring into one file all the dir
     #maybe should also comppress, but would increase cpu time...
-    tar -czf --absolute-names $file_name $folder_to_backup;
+    tar -czf $file_name $folder_to_backup;
     
 }
 
@@ -83,7 +83,7 @@ case $1 in
         #same as default
         if [ $delete_old_files ]
         then
-            #TODO: delete the old files form dir
+            #Deleting old files
             echo "DELETING OLD BACKUP FILES OLDER THAN 30 (1 Month old) DAYS FROM DAILY BACKUP";
             find $backup_daily_dir -type f -mtime +30 -exec rm {} \;
         fi
@@ -91,10 +91,9 @@ case $1 in
    -weekly)
         #TODO:check if the backup files does not exists in daily dir (if exists copy) if not do the routine
         
-        
         if [ $delete_old_files ]
         then
-            #TODO: delete the old files form dir
+            #Deleting old files
             echo "DELETING OLD BACKUP FILES OLDER THAN 180 (6 Months) DAYS FROM WEEKLY BACKUP";
             find $backup_weekly_dir -type f -mtime +180 -exec rm {} \;
         fi
@@ -106,9 +105,11 @@ case $1 in
     ;;
         
    -monthly)
+        #TODO:check if the backup files does not exists in daily dir (if exists copy) if not do the routine
+        
         if [ $delete_old_files ]
         then
-            #TODO: delete the old files form dir
+            #Deleting old files
             echo "DELETING OLD BACKUP FILES OLDER THAN 450 DAYS (1.5 years) FROM MONTHLY BACKUP";
             find $backup_monthly_dir -type f -mtime +450 -exec rm {} \;
         fi
@@ -127,7 +128,31 @@ esac
         mkdir "$db_daily_dir"
             if [ ! -d "$backup_daily_dir" ]
         then
-            echo ERR:2 Could not create $backup_daily_dir,... sorry cant continue;
+            echo ERR:2 Could not create $backup_daily_dir  sorry cant continue;
+            exit;
+        fi
+    fi
+    
+    if [ ! -d "$backup_weekly_dir" ]
+    then
+        echo WARNING:1 The targed directory missing $backup_weekly_dir trying to create
+        mkdir "$backup_weekly_dir"
+        mkdir "$backup_weekly_dir"
+            if [ ! -d "$backup_weekly_dir" ]
+        then
+            echo ERR:2 Could not create $backup_weekly_dir sorry cant continue;
+            exit;
+        fi
+    fi
+    
+    if [ ! -d "$backup_monthly_dir" ]
+    then
+        echo WARNING:1 The targed directory missing $backup_weekly_dir trying to create
+        mkdir "$backup_monthly_dir"
+        mkdir "$backup_monthly_dir"
+            if [ ! -d "$backup_weekly_dir" ]
+        then
+            echo ERR:2 Could not create $backup_monthly_dir  sorry cant continue;
             exit;
         fi
     fi
@@ -140,8 +165,10 @@ esac
     #getting count of the names for the backup destination
     folder_names=${#backup_folder_names[@]}
     
+    echo $folders $folder_names;
+    
     #checking if count of the names and folders are the same, if not then error
-    if [ $folders -neq $folder_names ]
+    if [ $folders -ne $folder_names ]
     then
         echo ERR:3 Please check configuration, the count of backup folders and folder names is not the same...sorry, can not continue...
         exit
