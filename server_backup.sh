@@ -60,7 +60,8 @@ then
     echo "Starting backup!" | mail -s "[Backup shell script] Starting backup!" $notify_email
 fi;
 
-settingsfile='bk_settings.cfg';
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+settingsfile=$DIR"/bk_settings.cfg";
 
 #checks if settings file exists if not exits
 if [ -f "$settingsfile" ] 
