@@ -12,11 +12,11 @@ function do_backup_folder()
     
     
     #doing the concat for the name
-    file_name="$backup_daily_dir""$name_for_folder""_$current_date.tar.gz";
+    file_name=$backup_daily_dir"/"$name_for_folder"_"$current_date".tar.gz";
     
     #taring into one file all the dir
     #maybe should also comppress, but would increase cpu time...
-    tar -czfP $file_name $folder_to_backup;
+    tar -czf --absolute-names $file_name $folder_to_backup;
     
 }
 
@@ -83,7 +83,8 @@ case $1 in
         if [ $delete_old_files ]
         then
             #TODO: delete the old files form dir
-            echo "DELETING OLD BACKUP FILES";
+            echo "DELETING OLD BACKUP FILES OLDER THAN 30 (1 Month old) DAYS FROM DAILY BACKUP";
+            find $backup_daily_dir -type f -mtime +30 -exec rm {} \;
         fi
     ;;
    -weekly)
@@ -93,7 +94,8 @@ case $1 in
         if [ $delete_old_files ]
         then
             #TODO: delete the old files form dir
-            echo "DELETING OLD BACKUP FILES";
+            echo "DELETING OLD BACKUP FILES OLDER THAN 180 (6 Months) DAYS FROM WEEKLY BACKUP";
+            find $backup_weekly_dir -type f -mtime +180 -exec rm {} \;
         fi
         
         #the code for not existant backup files in daily
@@ -106,15 +108,13 @@ case $1 in
         if [ $delete_old_files ]
         then
             #TODO: delete the old files form dir
-            echo "DELETING OLD BACKUP FILES";
+            echo "DELETING OLD BACKUP FILES OLDER THAN 450 DAYS (1.5 years) FROM MONTHLY BACKUP";
+            find $backup_monthly_dir -type f -mtime +450 -exec rm {} \;
         fi
         backup_daily_dir=$backup_monthly_dir;
         db_daily_dir=$db_monthly_dir;
     ;;     
 esac
-
-
-
 
 #common skript tasks
 
