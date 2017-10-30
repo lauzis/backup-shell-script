@@ -1,6 +1,6 @@
-======================================
+
 Backup Shell Script for using in cron
-======================================
+=======
 
 About
 ========================================
@@ -52,20 +52,20 @@ This should be run once month, will delete old files from monthly folder, then d
 Cron tasks
 ==============================
 
-#daily
+\#daily<br/>
 @daily /path/to/script/server_backup.sh -daily
-#weekly
+\#weekly<br/>
 @weekly /path/to/script/server_backup.sh -weekly
-#montly
+\#montly<br/>
 @monthly /path/to/script/server_backup.sh -monthly
 
 OR
 
-#two o'clock at night
+\#two o'clock at night<br/>
 0 2 * * * /path/to/script/server_backup.sh -daily
-#at given dates (after 7 days) at threee o'clock at night
+\#at given dates (after 7 days) at threee o'clock at night<br/>
 0 3 1,8,15,22,29 * * /path/to/script/server_backup.sh -weekly
-#each mohtn 2 date at three o'clock
+\#each mohtn 2 date at three o'clock<br/>
 0 3 2 * * /path/to/script/server_backup.sh -monthly
 
 
